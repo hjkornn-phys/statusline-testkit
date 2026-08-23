@@ -118,7 +118,6 @@ if [ "$pct" -ge 85 ]; then c=31; elif [ "$pct" -ge 60 ]; then c=33; else c=32; f
 #   row 2  what it costs    — every part of it moves on its own
 #
 # Splitting them also means the eye only rescans the row that changed.
-cols=${COLUMNS:-80}
 
 # Display width, not byte length. Every block glyph in the meter is three bytes,
 # so `${#s}` and `awk length` both report a 47-column row as 67 and would size
@@ -126,7 +125,8 @@ cols=${COLUMNS:-80}
 # counts characters. COLUMNS itself arrives in the environment because the
 # output is captured rather than attached to a tty — `tput cols` in here reads
 # nothing, which SKILL.md records.
-vis() { printf '%s' "$1" | wc -m | tr -d ' '; }
+esc=$(printf '\033')
+vis() { printf '%s' "$1" | sed "s/${esc}\[[0-9;]*m//g" | wc -m | tr -d ' '; }
 
 # Subscription usage, and the reason every label here is load-bearing.
 # `used_percentage` is the field name of two different quantities in this one
@@ -143,8 +143,9 @@ vis() { printf '%s' "$1" | wc -m | tr -d ' '; }
 # and the segment disappears rather than printing a fallback nobody asked for.
 #
 # A real payload carried 28.999999999999996 here. Rounded, or that is the bar.
-usage=""
-[ -z "$u5" ] || usage="5h $(printf '%.0f' "$u5")%"
+u5s=""
+[ -z "$u5" ] || u5s="5h $(printf '%.0f' "$u5")%"
+usage="$u5s"
 
 # The countdown, on the five-hour window only: it is the one that blocks a
 # session, and a second countdown costs width the bar does not have. A reset
@@ -160,10 +161,13 @@ if [ -n "$usage" ] && [ -n "$r5" ]; then
 		usage="$usage ⟲${cd_}"
 	fi
 fi
+u5cd="$usage"
 
-if [ -n "$u7" ]; then
+u7s=""
+[ -z "$u7" ] || u7s="7d $(printf '%.0f' "$u7")%"
+if [ -n "$u7s" ]; then
 	[ -z "$usage" ] || usage="$usage · "
-	usage="${usage}7d $(printf '%.0f' "$u7")%"
+	usage="${usage}$u7s"
 fi
 
 # Coloured on the five-hour value at the same thresholds as the context bar, so
@@ -177,15 +181,29 @@ fi
 # ROW 2 first, because it has no width decisions to make: it is short in every
 # session state the fixtures construct, and it is the row that must never be
 # clipped.
-meters="$(printf '\033[%sm%s %s%%\033[0m' "$c" "$bar" "$pct")"
+cols=${COLUMNS:-80}
+row2() {
+	m="$(printf '\033[%sm%s %s%%\033[0m' "$c" "$bar" "$pct")"
+	# The documented trap: this flag is a fixed 200k threshold on input, cache
+	# and output combined, so on an extended-context model it goes true while
+	# the bar is barely a third full. Shown as its own marker precisely because
+	# the bar does not imply it.
+	[ "$over" = "true" ] && m="$m !200k"
+	[ -z "$1" ] || m="$m · $(printf '\033[%sm%s\033[0m' "$uc" "$1")"
+	printf '%s · $%s' "$m" "$(printf '%.2f' "$cost" 2>/dev/null || echo "$cost")"
+}
 
-# The documented trap: this flag is a fixed 200k threshold on input, cache and
-# output combined, so on an extended-context model it goes true while the bar is
-# barely a third full. Shown as its own marker precisely because the bar does
-# not imply it.
-[ "$over" = "true" ] && meters="$meters !200k"
-[ -z "$usage" ] || meters="$meters · $(printf '\033[%sm%s\033[0m' "$uc" "$usage")"
-meters="$meters · \$$(printf '%.2f' "$cost" 2>/dev/null || echo "$cost")"
+# Row 2 gets a ladder of its own, because "the row that must never be clipped"
+# was a claim with no mechanism behind it: this row was a fixed width at every
+# COLUMNS, which held on a laptop and clipped in a split pane. Least
+# operational sheds first — the reset countdown, then the seven-day window,
+# then the five-hour number. The bar, its percentage and the cost never go;
+# they are why the row exists.
+meters=$(row2 "$usage")
+[ "$(vis "$meters")" -le "$cols" ] || meters=$(row2 "${u5s}${u7s:+${u5s:+ · }$u7s}")
+[ "$(vis "$meters")" -le "$cols" ] || meters=$(row2 "$u5cd")
+[ "$(vis "$meters")" -le "$cols" ] || meters=$(row2 "$u5s")
+[ "$(vis "$meters")" -le "$cols" ] || meters=$(row2 "")
 
 # ROW 1, built from the most operational thing outward and elided from the least.
 # The branch and dirty markers are why this row exists; the directory names the
@@ -254,6 +272,22 @@ if [ "$(vis "$row1")" -gt "$cols" ]; then
 	bare=""
 	[ -z "$agent" ] || bare="⟨${agent}⟩ "
 	row1="$bare${model%% (*} · $place$ver"
+fi
+
+# The floor under the old floor. With everything above shed this row still
+# carried the directory whole, so a 29-character repo name held a 42-column
+# floor and a 40-column pane clipped the branch marker — the exact clip the
+# ladder exists to prevent. Last rung: the directory itself shrinks, because
+# a name is recognisable from a fragment and the branch state is not.
+if [ "$(vis "$row1")" -gt "$cols" ]; then
+	head_="$bare${model%% (*} · "
+	tail_=" · $segment"
+	room=$((cols - $(vis "$head_") - $(vis "$tail_")))
+	if [ "$room" -ge 4 ]; then
+		d=${dir##*/}
+		[ "$(vis "$d")" -le "$room" ] || d="$(printf '%s' "$d" | cut -c1-$((room - 1)))…"
+		row1="${head_}${d}${tail_}"
+	fi
 fi
 
 printf '%s\n%s\n' "$row1" "$meters"

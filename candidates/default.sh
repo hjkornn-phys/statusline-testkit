@@ -43,4 +43,17 @@ if [ "$pct" -ge 85 ]; then c=31; elif [ "$pct" -ge 60 ]; then c=33; else c=32; f
 
 line="$model | ${dir##*/} | $branch | $(printf '\033[%sm%s %s%%\033[0m' "$c" "$bar" "$pct")"
 [ -z "$effort" ] || line="$line | $effort"
-printf '%s | $%s\n' "$line" "$(printf '%.2f' "$cost" 2>/dev/null || echo "$cost")"
+line="$line | \$$(printf '%.2f' "$cost" 2>/dev/null || echo "$cost")"
+
+# Fit the terminal, plainly: shed whole segments from the right until the line
+# fits COLUMNS, because the harness would otherwise truncate mid-glyph with an
+# ellipsis. Width is counted in characters with the colour codes stripped —
+# the block glyphs are three bytes and one column each, so byte arithmetic
+# would shed segments a 47-column terminal had room for.
+cols=${COLUMNS:-80}
+esc=$(printf '\033')
+vis() { printf '%s' "$1" | sed "s/${esc}\[[0-9;]*m//g" | wc -m | tr -d '[:space:]'; }
+while [ "$(vis "$line")" -gt "$cols" ] && [ "${line% | *}" != "$line" ]; do
+	line=${line% | *}
+done
+printf '%s\n' "$line"
