@@ -1,0 +1,46 @@
+{
+  "cwd": "/Users/example/repos/demo",
+  "session_id": "0f2c9a1e-3b44-4d51-9c77-1a2b3c4d5e6f",
+  "session_name": "demo-session",
+  "prompt_id": "550e8400-e29b-41d4-a716-446655440000",
+  "transcript_path": "/Users/example/.claude/projects/-Users-example-repos-demo/0f2c9a1e.jsonl",
+  "model": { "id": "claude-opus-5", "display_name": "Opus" },
+  "workspace": {
+    "current_dir": "/Users/example/repos/demo",
+    "project_dir": "/Users/example/repos/demo",
+    "added_dirs": [],
+    "repo": { "host": "example.test", "owner": "example-owner", "name": "demo" }
+  },
+  "version": "2.1.239",
+  "output_style": { "name": "default" },
+  "cost": {
+    "total_cost_usd": 0.4123,
+    "total_duration_ms": 845000,
+    "total_api_duration_ms": 92300,
+    "total_lines_added": 156,
+    "total_lines_removed": 23
+  },
+  "context_window": {
+    "total_input_tokens": 155000,
+    "total_output_tokens": 1200,
+    "context_window_size": 200000,
+    "used_percentage": 77,
+    "remaining_percentage": 23,
+    "current_usage": {
+      "input_tokens": 8500,
+      "output_tokens": 1200,
+      "cache_creation_input_tokens": 5000,
+      "cache_read_input_tokens": 141500
+    }
+  },
+  "exceeds_200k_tokens": false,
+  "fast_mode": false,
+  "effort": { "level": "medium" },
+  "thinking": { "enabled": true },
+  "rate_limits": {
+    "five_hour": { "used_percentage": 23.5, "resets_at": 1738425600 },
+    "seven_day": { "used_percentage": 41.2, "resets_at": 1738857600 }
+  },
+  "vim": { "mode": "NORMAL" },
+  "pr": { "number": 1234, "review_state": "pending" }
+}

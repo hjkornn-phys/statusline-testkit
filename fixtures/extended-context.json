@@ -1,0 +1,41 @@
+{
+  "cwd": "/Users/example/repos/demo",
+  "session_id": "44444444-5555-6666-7777-888888888888",
+  "transcript_path": "/Users/example/.claude/projects/-Users-example-repos-demo/44444444.jsonl",
+  "model": { "id": "claude-opus-5[1m]", "display_name": "Opus (1M context)" },
+  "workspace": {
+    "current_dir": "/Users/example/repos/demo",
+    "project_dir": "/Users/example/repos/demo",
+    "added_dirs": ["/Users/example/repos/other"],
+    "repo": { "host": "example.test", "owner": "example-owner", "name": "demo" }
+  },
+  "version": "2.1.239",
+  "output_style": { "name": "default" },
+  "cost": {
+    "total_cost_usd": 12.75,
+    "total_duration_ms": 18000000,
+    "total_api_duration_ms": 1900000,
+    "total_lines_added": 4200,
+    "total_lines_removed": 1800
+  },
+  "context_window": {
+    "total_input_tokens": 320000,
+    "total_output_tokens": 2400,
+    "context_window_size": 1000000,
+    "used_percentage": 32,
+    "remaining_percentage": 68,
+    "current_usage": {
+      "input_tokens": 12000,
+      "output_tokens": 2400,
+      "cache_creation_input_tokens": 8000,
+      "cache_read_input_tokens": 300000
+    }
+  },
+  "exceeds_200k_tokens": true,
+  "fast_mode": false,
+  "effort": { "level": "xhigh" },
+  "thinking": { "enabled": true },
+  "rate_limits": {
+    "five_hour": { "used_percentage": 88.0, "resets_at": 1738425600 }
+  }
+}

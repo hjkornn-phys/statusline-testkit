@@ -1,0 +1,22 @@
+{
+  "session_id": "00000000-0000-0000-0000-000000000000",
+  "transcript_path": "/tmp/transcript.jsonl",
+  "cwd": "/tmp/project",
+  "prompt_id": "00000000-0000-0000-0000-000000000000",
+  "columns": 100,
+  "tasks": [
+    {
+      "id": "0000000000000000",
+      "type": "local_agent",
+      "status": "running",
+      "description": "an agent's short description",
+      "label": "an agent's short description",
+      "startTime": 0,
+      "model": "claude-opus-5[1m]",
+      "contextWindowSize": 1000000,
+      "tokenCount": 0,
+      "tokenSamples": [0],
+      "cwd": "/tmp/project"
+    }
+  ]
+}

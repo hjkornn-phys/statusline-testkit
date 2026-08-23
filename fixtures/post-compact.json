@@ -1,0 +1,33 @@
+{
+  "cwd": "/Users/example/repos/demo",
+  "session_id": "22222222-3333-4444-5555-666666666666",
+  "session_name": "after the compact",
+  "transcript_path": "/Users/example/.claude/projects/-Users-example-repos-demo/22222222.jsonl",
+  "model": { "id": "claude-opus-5", "display_name": "Opus" },
+  "workspace": {
+    "current_dir": "/Users/example/repos/demo",
+    "project_dir": "/Users/example/repos/demo",
+    "added_dirs": []
+  },
+  "version": "2.1.239",
+  "output_style": { "name": "default" },
+  "cost": {
+    "total_cost_usd": 1.9,
+    "total_duration_ms": 3600000,
+    "total_api_duration_ms": 240000,
+    "total_lines_added": 900,
+    "total_lines_removed": 410
+  },
+  "context_window": {
+    "total_input_tokens": 12000,
+    "total_output_tokens": 0,
+    "context_window_size": 200000,
+    "used_percentage": 6,
+    "remaining_percentage": 94,
+    "current_usage": null
+  },
+  "exceeds_200k_tokens": true,
+  "fast_mode": true,
+  "effort": { "level": "high" },
+  "thinking": { "enabled": true }
+}
