@@ -29,8 +29,8 @@
 # Mode 4 is matched as a standalone token, not a substring: a repository named
 # null-safety is a correct bar, and a referee that fails it costs more than the
 # defect it hunts. Mode 5 counts CHARACTERS with ANSI colour stripped — never
-# bytes. A ten-cell block meter is thirty bytes and ten columns, and this
-# repo's own records carry the inflated numbers that byte-counting published.
+# bytes: a ten-cell block meter is thirty bytes and ten columns, so a
+# byte-counting referee reds a 40-column bar a 47-column terminal displays whole.
 set -u
 
 cand=${1:-}
