@@ -116,6 +116,24 @@ they were written together; a field added here and not to `fixtures/` will not f
 anything. `scripts/check-candidate.sh` referees CANDIDATES against the fixtures, not
 the fixtures against this file. Change one, change the other by hand.
 
+### Windows that exist in the client and never reach this payload
+
+**Read from the client binary at 2.1.241 (2026-08-24), the weakest evidence here.**
+The client carries a richer rate-limit projection for a DIFFERENT surface — the
+claude.ai usage endpoint that feeds the `/usage` dialog: `seven_day_opus`,
+`seven_day_sonnet`, `seven_day_overage_included`, a `model_scoped` array of
+per-model weekly windows (`display_name` e.g. `'Fable'`, `utilization`,
+`resets_at`), and a `subscription_type` of `'pro' | 'max' | 'team' | 'enterprise'`.
+
+None of it reaches a status line. The status-line payload builder constructs its
+`rate_limits` object from exactly two windows — `five_hour` and `seven_day`,
+each copied as `{used_percentage, resets_at}` and omitted independently when
+absent — and sends the object only when at least one exists. A candidate reading
+`.rate_limits.model_scoped` or a plan name gets `empty` in every session state,
+on every plan, and no fixture can honestly construct otherwise. If a later
+version projects these into the payload, that is a banner-moving change: re-read
+the builder before adding a fixture or a segment for them.
+
 Note the field name is `used_percentage`, the same name the context window uses for
 something entirely different. A candidate reading the wrong one gets a plausible
 number rather than an error.
