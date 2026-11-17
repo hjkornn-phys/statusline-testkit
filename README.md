@@ -104,7 +104,7 @@ FAIL fixtures/long-identity.json @40: a row is 42 columns in a 40-column termina
 
 ## What the fixtures construct
 
-Seven payloads, each built to break something different.
+Nine payloads, each built to break something different.
 
 | fixture | the state |
 |---|---|
@@ -115,6 +115,8 @@ Seven payloads, each built to break something different.
 | `extended-context.json` | a 1M-token model, one rate-limit window present and one **absent** |
 | `steady.json` | the ordinary case, both windows present |
 | `long-identity.json` | a long model name, session label and directory — forces truncation |
+| `gateway-spend.json` | a gateway session — `rate_limits` carries only `spend_limit`, past 100%, no `five_hour` or `seven_day` (2.1.326, from the binary) |
+| `gateway-spend-pct-only.json` | `spend_limit` with a percentage and no dollar figures, beside a lone `five_hour` (2.1.326, from the binary) |
 
 **Absent is not null**, and that distinction is most of the difficulty. Optional
 objects are missing from the payload entirely, not present-and-null. `// empty`

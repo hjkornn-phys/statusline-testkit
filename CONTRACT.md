@@ -4,6 +4,8 @@ Every field Claude Code writes to a status line command's stdin, which of them
 can be **absent**, which can be **null**, and what the settings shape is.
 
 > **Verified against Claude Code 2.1.241 — docs re-read 2026-08-23.**
+> `rate_limits` alone was re-read from the 2.1.326 client binary on 2026-11-17;
+> the docs were not re-read then, so the line above still dates everything else.
 > Observed behaviour in this file was seen at 2.1.239 and 2.1.240.
 > If your client is newer than the line above, this file may be missing fields.
 > Re-verify before trusting it — see [Keeping this current](#keeping-this-current).
@@ -79,7 +81,7 @@ and may differ once the working directory moves.
 | `agent.name` | running under an agent flag or agent settings |
 | `pr` | an open pull request, or a GitLab merge request, is found for the branch. Removed once it merges or closes. `pr.review_state` and `pr.kind` may be absent independently |
 | `worktree` | a worktree session. `branch` and `original_branch` may be absent for hook-based worktrees |
-| `rate_limits` | subscriber sessions, after the first API response. Each window may be absent independently |
+| `rate_limits` | subscriber sessions, after the first API response; at 2.1.326 also gateway sessions carrying only `spend_limit`. Each window may be absent independently |
 
 ## Null — the key is present and its value is null
 
@@ -125,14 +127,44 @@ claude.ai usage endpoint that feeds the `/usage` dialog: `seven_day_opus`,
 per-model weekly windows (`display_name` e.g. `'Fable'`, `utilization`,
 `resets_at`), and a `subscription_type` of `'pro' | 'max' | 'team' | 'enterprise'`.
 
-None of it reaches a status line. The status-line payload builder constructs its
-`rate_limits` object from exactly two windows — `five_hour` and `seven_day`,
-each copied as `{used_percentage, resets_at}` and omitted independently when
-absent — and sends the object only when at least one exists. A candidate reading
+None of it reaches a status line. At 2.1.241 the status-line payload builder
+constructed its `rate_limits` object from exactly two windows, `five_hour` and
+`seven_day`. **Re-read at 2.1.326 (2026-11-17), the per-model windows still do
+not reach it** — `model_scoped`, `seven_day_opus` and `seven_day_sonnet` are
+read by the `/usage` dialog and by a structured `/usage` report sent to SDK and
+IDE integrations, never by the status line. A candidate reading
 `.rate_limits.model_scoped` or a plan name gets `empty` in every session state,
 on every plan, and no fixture can honestly construct otherwise. If a later
 version projects these into the payload, that is a banner-moving change: re-read
 the builder before adding a fixture or a segment for them.
+
+### `spend_limit`, the third window (2.1.326, binary only)
+
+2.1.326 added one window, and only on one lane: `spend_limit`, built when the
+client is signed in through an LLM gateway (or policy requires one) and that
+gateway reports overage. A first-party subscription session never gets it.
+
+```json
+{ "spend_limit": { "used_percentage": 0.0, "resets_at": 0,
+                   "used_usd": 0, "limit_usd": 0, "period": "monthly" } }
+```
+
+- `used_percentage` is **not capped at 100**. `five_hour` and `seven_day` are
+  clamped there; this one is not, so spend past the limit reads `112.5`.
+- `used_usd` and `limit_usd` are dollars (the client divides cents by 100), and
+  are present only for a USD limit whose gateway read agrees with this window's
+  `resets_at`. They are absent independently of the percentage.
+- `period` is `daily`, `weekly` or `monthly`, or absent.
+- It counts on its own: `rate_limits` is sent when ANY of the three windows
+  exists, so a gateway payload can carry `rate_limits` with neither `five_hour`
+  nor `seven_day`. `fixtures/gateway-spend.json` constructs that;
+  `fixtures/gateway-spend-pct-only.json` constructs the percentage without the
+  dollar figures beside a lone `five_hour`.
+
+No live session has carried this window. Both fixtures are built from the
+builder's source, the weakest evidence in this file, and no candidate in this
+repo renders the window — the fixtures exist so every candidate is refereed
+against the payload shape, not to advertise a segment.
 
 Note the field name is `used_percentage`, the same name the context window uses for
 something entirely different. A candidate reading the wrong one gets a plausible
